@@ -7,6 +7,27 @@ plugins:
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
 
+custom:
+  serverless-offline:
+    port: 3003
+
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+
+  documentation:
+    api:
+      info:
+        version: v0.0.0
+        title: Todo API
+        description: Serverless application for manging todos
+    models:
+      - name: TodoCreateRequest
+        contentType: application/json
+        schema: ${file(validators/todo/create-request.json)}
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -38,13 +59,18 @@ functions:
           path: todos
 
   # TODO: Configure this function
-  GetTodos:
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
       - http:
           method: post
           path: todos
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new todo
+            description: Create a new todo
+            requestModels:
+              'application/json': TodoCreateRequest
 
   # TODO: Configure this function
   UpdateTodo:
