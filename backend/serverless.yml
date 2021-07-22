@@ -26,6 +26,9 @@ custom:
       - name: TodoCreateRequest
         contentType: application/json
         schema: ${file(src/todos/validators/create-request.json)}
+      - name: TodoUpdateRequest
+        contentType: application/json
+        schema: ${file(src/todos/validators/update-request.json)}
 
 provider:
   name: aws
@@ -78,6 +81,12 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update a new todo
+            description: Update a new todo
+            requestModels:
+              'application/json': TodoUpdateRequest
 
   # TODO: Configure this function
   DeleteTodo:
