@@ -1,10 +1,22 @@
 import 'source-map-support/register'
-
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import { createLogger } from "../../utils/logger";
+import { deleteTodo } from "../service";
+
+const logger = createLogger("delete todo");
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const todoId = event.pathParameters.todoId
+  try {
+    const todoId = event.pathParameters.todoId
+    logger.info("Deleting todo: ", todoId);
 
-  // TODO: Remove a TODO item by id
-  return undefined
+    const deletedTodoId = await deleteTodo(todoId);
+
+    return {
+      statusCode: 204,
+      body: deletedTodoId
+    }
+  } catch (error) {
+    logger.crit(error);
+  }
 }
