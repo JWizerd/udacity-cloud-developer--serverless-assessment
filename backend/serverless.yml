@@ -48,11 +48,11 @@ provider:
 functions:
 
   Auth:
-    handler: src/lambda/auth/auth0Authorizer.handler
+    handler: src/auth/lambdas/auth0-authorizer.handler
 
   # TODO: Configure this function
   GetTodos:
-    handler: src/lambda/http/getTodos.handler
+    handler: src/todos/lambdas/list.handler
     events:
       - http:
           method: get
@@ -60,7 +60,7 @@ functions:
 
   # TODO: Configure this function
   CreateTodo:
-    handler: src/lambda/http/createTodo.handler
+    handler: src/todos/lambdas/create.handler
     events:
       - http:
           method: post
@@ -74,7 +74,7 @@ functions:
 
   # TODO: Configure this function
   UpdateTodo:
-    handler: src/lambda/http/updateTodo.handler
+    handler: src/todos/lambdas/update.handler
     events:
       - http:
           method: patch
@@ -82,7 +82,7 @@ functions:
 
   # TODO: Configure this function
   DeleteTodo:
-    handler: src/lambda/http/deleteTodo.handler
+    handler: src/todos/lambdas/delete.handler
     events:
       - http:
           method: delete
@@ -90,7 +90,7 @@ functions:
 
   # TODO: Configure this function
   GenerateUploadUrl:
-    handler: src/lambda/http/generateUploadUrl.handler
+    handler: src/todo-images/lambdas/generate-upload-url.handler
     events:
       - http:
           method: post
