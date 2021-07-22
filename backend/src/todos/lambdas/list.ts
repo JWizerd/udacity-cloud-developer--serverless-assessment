@@ -1,13 +1,13 @@
-import 'source-map-support/register'
-import { APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import 'source-map-support/register';
+import { APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda';
 import { createLogger } from "../../utils/logger";
-import { findAllTodos } from '../service';
+import TodoService from '../service';
 import logStatements from './log-statements';
-const logger = createLogger("list all todos");
+const logger = createLogger(logStatements.findAll.name);
 
 export const handler: APIGatewayProxyHandler = async (): Promise<APIGatewayProxyResult> => {
   try {
-    const todos = await findAllTodos();
+    const todos = await TodoService.findAllTodos();
     logger.info(logStatements.findAll.success);
 
     return {

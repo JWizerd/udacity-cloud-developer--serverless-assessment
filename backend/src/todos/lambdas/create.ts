@@ -3,15 +3,15 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } f
 import { CreateTodoRequest } from '../dtos/create';
 import { createLogger } from "../../utils/logger";
 import { Logger } from "winston";
-import { createTodo } from "../service";
+import TodoService from "../service";
 import logStatements from "./log-statements";
 
-const logger: Logger = createLogger("todo-create");
+const logger: Logger = createLogger(logStatements.create.name);
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const newTodo: CreateTodoRequest = JSON.parse(event.body);
-    const result = await createTodo(newTodo);
+    const result = await TodoService.createTodo(newTodo);
     logger.info(logStatements.create.success, newTodo);
 
     return {

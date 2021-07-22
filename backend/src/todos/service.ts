@@ -7,8 +7,7 @@ import { UpdateTodoRequest } from "./dtos/update";
 const docClient: DocumentClient = createDynamoDBClient();
 const groupsTable = process.env.GROUPS_TABLE;
 
-
-export const findAllTodos = async (client: DocumentClient = docClient): Promise<TodoItem[]> => {
+const findAllTodos = async (client: DocumentClient = docClient): Promise<TodoItem[]> => {
   const result = await client.query({
     TableName: groupsTable,
   }).promise();
@@ -16,7 +15,7 @@ export const findAllTodos = async (client: DocumentClient = docClient): Promise<
   return result.Items as TodoItem[];
 }
 
-export const createTodo = async (todoItem: CreateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> => {
+const createTodo = async (todoItem: CreateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> => {
   await client.put({
     TableName: groupsTable,
     Item: todoItem
@@ -25,7 +24,7 @@ export const createTodo = async (todoItem: CreateTodoRequest, client: DocumentCl
   return todoItem as TodoItem;
 }
 
-export const deleteTodo = async (todoId: string, client: DocumentClient = docClient): Promise<string> => {
+const deleteTodo = async (todoId: string, client: DocumentClient = docClient): Promise<string> => {
   await client.delete({
     TableName: groupsTable,
     Key: {
@@ -36,12 +35,11 @@ export const deleteTodo = async (todoId: string, client: DocumentClient = docCli
   return todoId;
 }
 
-export const updateTodo = async (userId: string, todoId: string, todoItem: UpdateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> => {
+const updateTodo = async (todoId: string, todoItem: UpdateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> => {
   const result = await client.update({
     TableName: groupsTable,
     Key: {
-      todoId: todoId,
-      userId: userId
+      todoId: todoId
     },
     UpdateExpression: "set info.name = :a, info.dueDate=:b, info.done=:c",
     ExpressionAttributeValues: {
@@ -53,4 +51,11 @@ export const updateTodo = async (userId: string, todoId: string, todoItem: Updat
   }).promise();
 
   return result.$response.data as TodoItem;
+}
+
+export default {
+  findAllTodos,
+  createTodo,
+  deleteTodo,
+  updateTodo
 }
