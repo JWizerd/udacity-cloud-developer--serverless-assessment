@@ -1,7 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { CreateTodoRequest } from '../dtos/create';
 import { createLogger } from "../../utils/logger";
-import { Logger } from "winston";
 import TodoService from "../service";
 import logStatements from "../log-statements";
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
@@ -9,7 +8,7 @@ import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler
 const logger = createLogger(logStatements.create.name);
 const service = new TodoService();
 
-export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service: TodoService, logger: Logger) => {
+export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
   try {
     const newTodo: CreateTodoRequest = JSON.parse(event.body);
     const result = await service.create(newTodo);

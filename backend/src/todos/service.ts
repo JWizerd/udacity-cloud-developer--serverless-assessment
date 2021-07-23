@@ -5,13 +5,10 @@ import { CreateTodoRequest } from "./dtos/create";
 import { UpdateTodoRequest } from "./dtos/update";
 import { Service } from "../interfaces/service";
 
-const docClient: DocumentClient = createDynamoDBClient();
-const groupsTable = process.env.GROUPS_TABLE;
-
 export default class TodoService implements Service {
   constructor(
     private readonly client: DocumentClient = createDynamoDBClient(),
-    private readonly table: string = groupsTable
+    private readonly table: string = process.env.GROUPS_TABLE
   ) {}
 
   async findAll(): Promise<TodoItem[]> {
@@ -42,9 +39,9 @@ export default class TodoService implements Service {
     return todoId;
   }
 
-  async update(todoId: string, todoItem: UpdateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> {
-    const result = await client.update({
-      TableName: groupsTable,
+  async update(todoId: string, todoItem: UpdateTodoRequest): Promise<TodoItem> {
+    const result = await this.client.update({
+      TableName: this.table,
       Key: {
         todoId: todoId
       },
