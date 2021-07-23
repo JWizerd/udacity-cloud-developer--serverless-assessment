@@ -3,59 +3,60 @@ import { createDynamoDBClient } from '../dynamodb/utils/get-client';
 import { TodoItem } from "./models/todo-item";
 import { CreateTodoRequest } from "./dtos/create";
 import { UpdateTodoRequest } from "./dtos/update";
+import { Service } from "../interfaces/service";
 
 const docClient: DocumentClient = createDynamoDBClient();
 const groupsTable = process.env.GROUPS_TABLE;
 
-const findAllTodos = async (client: DocumentClient = docClient): Promise<TodoItem[]> => {
-  const result = await client.query({
-    TableName: groupsTable,
-  }).promise();
+export default class TodoService implements Service {
+  constructor(
+    private readonly client: DocumentClient = createDynamoDBClient(),
+    private readonly table: string = groupsTable
+  ) {}
 
-  return result.Items as TodoItem[];
-}
+  async findAll(): Promise<TodoItem[]> {
+    const result = await this.client.query({
+      TableName: this.table,
+    }).promise();
 
-const createTodo = async (todoItem: CreateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> => {
-  await client.put({
-    TableName: groupsTable,
-    Item: todoItem
-  }).promise();
+    return result.Items as TodoItem[];
+  }
 
-  return todoItem as TodoItem;
-}
+  async create(todoItem: CreateTodoRequest): Promise<TodoItem> {
+    await this.client.put({
+      TableName: this.table,
+      Item: todoItem
+    }).promise();
 
-const deleteTodo = async (todoId: string, client: DocumentClient = docClient): Promise<string> => {
-  await client.delete({
-    TableName: groupsTable,
-    Key: {
-      todoId
-    }
-  }).promise();
+    return todoItem as TodoItem;
+  }
 
-  return todoId;
-}
+  async delete(todoId: string): Promise<string> {
+    await this.client.delete({
+      TableName: this.table,
+      Key: {
+        todoId
+      }
+    }).promise();
 
-const updateTodo = async (todoId: string, todoItem: UpdateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> => {
-  const result = await client.update({
-    TableName: groupsTable,
-    Key: {
-      todoId: todoId
-    },
-    UpdateExpression: "set info.name = :a, info.dueDate=:b, info.done=:c",
-    ExpressionAttributeValues: {
-      ":a": todoItem.name,
-      ":b": todoItem.dueDate,
-      ":c": todoItem.done
-    },
-    ReturnValues: "ALL_NEW"
-  }).promise();
+    return todoId;
+  }
 
-  return result.$response.data as TodoItem;
-}
+  async update(todoId: string, todoItem: UpdateTodoRequest, client: DocumentClient = docClient): Promise<TodoItem> {
+    const result = await client.update({
+      TableName: groupsTable,
+      Key: {
+        todoId: todoId
+      },
+      UpdateExpression: "set info.name = :a, info.dueDate=:b, info.done=:c",
+      ExpressionAttributeValues: {
+        ":a": todoItem.name,
+        ":b": todoItem.dueDate,
+        ":c": todoItem.done
+      },
+      ReturnValues: "ALL_NEW"
+    }).promise();
 
-export default {
-  findAllTodos,
-  createTodo,
-  deleteTodo,
-  updateTodo
+    return result.$response.data as TodoItem;
+  }
 }

@@ -1,17 +1,18 @@
-import 'source-map-support/register';
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 import { CreateTodoRequest } from '../dtos/create';
 import { createLogger } from "../../utils/logger";
 import { Logger } from "winston";
 import TodoService from "../service";
-import logStatements from "./log-statements";
+import logStatements from "../log-statements";
+import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
 
-const logger: Logger = createLogger(logStatements.create.name);
+const logger = createLogger(logStatements.create.name);
+const service = new TodoService();
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service: TodoService, logger: Logger) => {
   try {
     const newTodo: CreateTodoRequest = JSON.parse(event.body);
-    const result = await TodoService.createTodo(newTodo);
+    const result = await service.create(newTodo);
     logger.info(logStatements.create.success, newTodo);
 
     return {
@@ -27,3 +28,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     }
   }
 }
+
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return createTodo(event, service, logger);
+}
+
