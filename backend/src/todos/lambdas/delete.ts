@@ -3,21 +3,31 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 import { createLogger } from "../../utils/logger";
 import TodoService from "../service";
 import logStatements from "../log-statements";
+import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
 
 const logger = createLogger(logStatements.delete.name);
 const service = new TodoService();
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
   try {
     const todoId = event.pathParameters.todoId
-    const deletedTodoId = await service.deleteTodo(todoId);
+    await service.delete(todoId);
     logger.info(logStatements.delete.success, todoId);
 
     return {
       statusCode: 204,
-      body: deletedTodoId
+      body: ""
     }
   } catch (error) {
-    logger.crit(logStatements.delete.error ,error);
+    logger.error(logStatements.delete.error, error);
+
+    return {
+      statusCode: 500,
+      body: logStatements.delete.error
+    }
   }
+}
+
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return deleteTodo(event, service, logger);
 }

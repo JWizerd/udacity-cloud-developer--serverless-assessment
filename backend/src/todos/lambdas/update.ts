@@ -20,7 +20,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       body: JSON.stringify(result)
     }
   } catch (error) {
-    logger.crit(logStatements.update.error, error);
+    logger.error(logStatements.update.error, error);
 
     return {
       statusCode: 500,
