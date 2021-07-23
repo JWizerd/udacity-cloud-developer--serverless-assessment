@@ -1,7 +1,7 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
 export function createDynamoDBClient() {
-  if (process.env.IS_OFFLINE || process.env.JEST_WORKER_ID) {
+  if (process.env.IS_OFFLINE) {
     console.log('Creating a local DynamoDB instance')
     return new DocumentClient({
       region: 'localhost',
