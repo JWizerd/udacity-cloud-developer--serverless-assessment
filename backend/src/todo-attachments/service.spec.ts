@@ -1,21 +1,26 @@
 import { TodoAttachmentService } from "./service";
-import * as AWSMock from 'jest-aws-sdk-mock';
-// Make sure to mock any functions before importing client
-import * as AWS from "aws-sdk";
+import * as S3 from "aws-sdk/clients/s3";
 
 const mockBucketName = "test-bucket";
 const mockUrlExpDate = 300;
 const mockTodoId = "abc123";
-AWSMock.setSDKInstance(AWS);
+export const awsSdkPromiseResponse = jest.fn().mockReturnValue(Promise.resolve(true));
+
+jest.mock("aws-sdk/clients/s3", () => {
+  return class {
+    getSignedUrl = jest.fn()
+    deleteObject = jest.fn().mockReturnThis()
+    promise = jest.fn().mockImplementation(() => ({ promise: awsSdkPromiseResponse }))
+  }
+});
 
 describe('TodoAttachmentService', () => {
   afterAll(() => {
-    AWSMock.restore("S3");
+    jest.resetAllMocks();
   });
 
   it('should return a signed url with the correct properties', async () => {
-    AWSMock.mock('S3', 'getSignedUrl', jest.fn);
-    const s3 = new AWS.S3();
+    const s3 = new S3();
     const Service = new TodoAttachmentService(s3, mockBucketName, mockUrlExpDate)
     await Service.getUploadUrl(mockTodoId);
     expect(s3.getSignedUrl).toHaveBeenCalledTimes(1);
@@ -27,8 +32,7 @@ describe('TodoAttachmentService', () => {
   });
 
   it('should return a signed url with the correct properties', async () => {
-    AWSMock.mock('S3', 'deleteObject', null);
-    const s3 = new AWS.S3();
+    const s3 = new S3();
     const Service = new TodoAttachmentService(s3, mockBucketName, mockUrlExpDate)
     await Service.delete(mockTodoId);
     expect(s3.deleteObject).toHaveBeenCalledTimes(1);
