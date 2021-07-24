@@ -14,14 +14,20 @@ jest.mock("aws-sdk/clients/s3", () => {
   }
 });
 
+let s3;
+let Service;
+
 describe('TodoAttachmentService', () => {
-  afterAll(() => {
+  beforeEach(() => {
+    s3 = new S3();
+    Service = new TodoAttachmentService(s3, mockBucketName, mockUrlExpDate)
+  });
+
+  afterEach(() => {
     jest.resetAllMocks();
   });
 
   it('should return a signed url with the correct properties', async () => {
-    const s3 = new S3();
-    const Service = new TodoAttachmentService(s3, mockBucketName, mockUrlExpDate)
     await Service.getUploadUrl(mockTodoId);
     expect(s3.getSignedUrl).toHaveBeenCalledTimes(1);
     expect(s3.getSignedUrl).toHaveBeenCalledWith("putObject", {
@@ -32,8 +38,6 @@ describe('TodoAttachmentService', () => {
   });
 
   it('should return a signed url with the correct properties', async () => {
-    const s3 = new S3();
-    const Service = new TodoAttachmentService(s3, mockBucketName, mockUrlExpDate)
     await Service.delete(mockTodoId);
     expect(s3.deleteObject).toHaveBeenCalledTimes(1);
     expect(s3.deleteObject).toHaveBeenCalledWith({
