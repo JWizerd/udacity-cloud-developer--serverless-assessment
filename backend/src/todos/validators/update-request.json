@@ -12,15 +12,12 @@
     },
     "done": {
       "type": "boolean"
-    },
-    "attachmentUrl": {
-      "type": "string"
     }
   },
   "required": [
     "name",
-    "description",
-    "dueDate"
+    "dueDate",
+    "done"
   ],
   "additionalProperties": false
 }

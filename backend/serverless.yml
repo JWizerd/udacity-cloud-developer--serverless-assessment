@@ -1,5 +1,4 @@
-service:
-  name: serverless-todo-app
+service: serverless-todo-app
 
 plugins:
   - serverless-webpack
@@ -27,6 +26,9 @@ custom:
       - name: TodoCreateRequest
         contentType: application/json
         schema: ${file(src/todos/validators/create-request.json)}
+      - name: TodoUpdateRequest
+        contentType: application/json
+        schema: ${file(src/todos/validators/update-request.json)}
 
 provider:
   name: aws
@@ -37,10 +39,8 @@ provider:
 
   environment:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
-    TODO_IMAGES_TABLE: 'TodoImages-${self:provider.stage}'
-    TODO_IMAGE_ID_INDEX: 'imageId'
     TODO_SECONDARY_INDEX_NAME: 'title'
-    TODO_IMAGES_S3_BUCKET: 'todo-images-bucket-${self:provider.stage}'
+    TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
     SIGNED_URL_EXPIRATION: 300
@@ -79,6 +79,12 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update a new todo
+            description: Update a new todo
+            requestModels:
+              'application/json': TodoUpdateRequest
 
   # TODO: Configure this function
   DeleteTodo:
@@ -90,7 +96,7 @@ functions:
 
   # TODO: Configure this function
   GenerateUploadUrl:
-    handler: src/todo-images/lambdas/generate-upload-url.handler
+    handler: src/todo-attachments/lambdas/generate-upload-url.handler
     events:
       - http:
           method: post
@@ -133,35 +139,10 @@ resources:
             KeySchema:
               - AttributeName: id
                 KeyType: HASH
-              - AttributeName: title
+              - AttributeName: dueDate
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
-
-    TodoImagesTable:
-      Type: "AWS::DynamoDB::Table"
-      Properties:
-        AttributeDefinitions:
-          - AttributeName: todoId
-            AttributeType: S
-          - AttributeName: timestamp
-            AttributeType: S
-          - AttributeName: imageId
-            AttributeType: S
-        KeySchema:
-          - AttributeName: todoId
-            KeyType: HASH
-          - AttributeName: timestamp
-            KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.TODO_IMAGES_TABLE}
-        GlobalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODO_IMAGE_ID_INDEX}
-            KeySchema:
-            - AttributeName: imageId
-              KeyType: HASH
-            Projection:
-              ProjectionType: ALL
 
     RequestBodyValidator:
       Type: AWS::ApiGateway::RequestValidator
@@ -172,10 +153,10 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: false
 
-    TodoImagesBucket:
+    TodoAttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.environment.TODO_IMAGES_S3_BUCKET}
+        BucketName: ${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}
         CorsConfiguration:
           CorsRules:
             -
@@ -191,26 +172,26 @@ resources:
                 - HEAD
               MaxAge: 3000
 
-    TodoImagesBucketPolicy:
+    TodoAttachmentsBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
         PolicyDocument:
-          Id: TodoImagesBucketPolicy
+          Id: TodoAttachmentsBucketPolicy
           Version: "2012-10-17"
           Statement:
             - Sid: PublicReadForGetBucketObjects
               Effect: Allow
               Principal: '*'
               Action: 's3:GetObject'
-              Resource: 'arn:aws:s3:::${self:provider.environment.TODO_IMAGES_S3_BUCKET}/*'
+              Resource: 'arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*'
             - Sid: PutImagesOnlyBucket
               Effect: Allow
               Principal: '*'
               Ation: 's3:PutObject'
               Resource:
-                - arn:aws:s3:::${self:provider.environment.TODO_IMAGES_S3_BUCKET}/*.jpg
-                - arn:aws:s3:::${self:provider.environment.TODO_IMAGES_S3_BUCKET}/*.png
-        Bucket: !Ref TodoImagesBucket
+                - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.jpg
+                - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.png
+        Bucket: !Ref TodoAttachmentsBucket
 
     KMSKey:
       Type: AWS::KMS::Key
