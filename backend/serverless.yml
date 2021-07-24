@@ -139,7 +139,7 @@ resources:
             KeySchema:
               - AttributeName: id
                 KeyType: HASH
-              - AttributeName: title
+              - AttributeName: dueDate
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index

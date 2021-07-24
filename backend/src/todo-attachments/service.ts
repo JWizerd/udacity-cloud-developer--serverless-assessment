@@ -1,14 +1,14 @@
-import { S3 } from "aws-sdk";
+import * as S3 from "aws-sdk/clients/s3";
 import { Service } from "../interfaces/service";
 
 export class TodoAttachmentService implements Service {
   constructor(
     private readonly s3: S3 = new S3(),
-    private readonly bucketName: string = process.env.TODO_IMAGES_S3_BUCKET,
-    private readonly urlExpiration: string = process.env.SIGNED_URL_EXPIRATION
+    private readonly bucketName: string = process.env.TODO_ATTACHMENTS_S3_BUCKET,
+    private readonly urlExpiration: number = parseInt(process.env.SIGNED_URL_EXPIRATION, 10)
   ) {}
 
-  getUploadUrl(todoId: string) {
+  async getUploadUrl(todoId: string) {
     return this.s3.getSignedUrl('putObject', {
       Bucket: this.bucketName,
       Key: todoId,

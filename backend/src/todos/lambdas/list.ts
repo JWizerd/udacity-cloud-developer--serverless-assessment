@@ -5,9 +5,6 @@ import TodoService from '../service';
 import logStatements from '../log-statements';
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
 
-const logger = createLogger(logStatements.findAll.name);
-const service = new TodoService();
-
 export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
   try {
     const todos = await service.findAll();
@@ -28,5 +25,7 @@ export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent,
 }
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const logger = createLogger(logStatements.findAll.name);
+  const service = new TodoService();
   return listTodos(event, service, logger);
 }

@@ -5,9 +5,6 @@ import TodoService from "../service";
 import logStatements from "../log-statements";
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
 
-const logger = createLogger(logStatements.delete.name);
-const service = new TodoService();
-
 export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
   try {
     const todoId = event.pathParameters.todoId
@@ -29,5 +26,7 @@ export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent
 }
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const logger = createLogger(logStatements.delete.name);
+  const service = new TodoService();
   return deleteTodo(event, service, logger);
 }

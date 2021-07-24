@@ -19,7 +19,8 @@
   },
   "required": [
     "name",
-    "description"
+    "description",
+    "dueDate"
   ],
   "additionalProperties": false
 }
