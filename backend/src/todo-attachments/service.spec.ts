@@ -8,7 +8,7 @@ export const awsSdkPromiseResponse = jest.fn().mockReturnValue(Promise.resolve(t
 
 jest.mock("aws-sdk/clients/s3", () => {
   return class {
-    getSignedUrl = jest.fn()
+    getSignedUrlPromise = jest.fn().mockResolvedValue(null)
     deleteObject = jest.fn().mockReturnThis()
     promise = jest.fn().mockImplementation(() => ({ promise: awsSdkPromiseResponse }))
   }
@@ -29,15 +29,15 @@ describe('TodoAttachmentService', () => {
 
   it('should return a signed url with the correct properties', async () => {
     await Service.getUploadUrl(mockTodoId);
-    expect(s3.getSignedUrl).toHaveBeenCalledTimes(1);
-    expect(s3.getSignedUrl).toHaveBeenCalledWith("putObject", {
+    expect(s3.getSignedUrlPromise).toHaveBeenCalledTimes(1);
+    expect(s3.getSignedUrlPromise).toHaveBeenCalledWith("putObject", {
       Bucket: mockBucketName,
       Key: mockTodoId,
       Expires: 300
     });
   });
 
-  it('should return a signed url with the correct properties', async () => {
+  it('should all s3.deleteObject with correct params', async () => {
     await Service.delete(mockTodoId);
     expect(s3.deleteObject).toHaveBeenCalledTimes(1);
     expect(s3.deleteObject).toHaveBeenCalledWith({

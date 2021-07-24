@@ -1,7 +1,7 @@
 import * as S3 from "aws-sdk/clients/s3";
-import { Service } from "../interfaces/service";
+import { AttachmentsService } from "./attachments-service.interface";
 
-export class TodoAttachmentService implements Service {
+export class TodoAttachmentService implements AttachmentsService {
   constructor(
     private readonly s3: S3 = new S3(),
     private readonly bucketName: string = process.env.TODO_ATTACHMENTS_S3_BUCKET,
@@ -9,7 +9,7 @@ export class TodoAttachmentService implements Service {
   ) {}
 
   async getUploadUrl(todoId: string) {
-    return this.s3.getSignedUrl('putObject', {
+    return this.s3.getSignedUrlPromise('putObject', {
       Bucket: this.bucketName,
       Key: todoId,
       Expires: this.urlExpiration
@@ -17,7 +17,7 @@ export class TodoAttachmentService implements Service {
   }
 
   async delete(todoId: string) {
-    await this.s3.deleteObject({
+    return this.s3.deleteObject({
       Key: todoId,
       Bucket: this.bucketName
     }).promise();
