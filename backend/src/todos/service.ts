@@ -4,6 +4,7 @@ import { TodoItem } from "./models/todo-item";
 import { CreateTodoRequest } from "./dtos/create";
 import { UpdateTodoRequest } from "./dtos/update";
 import { Service } from "../interfaces/service";
+import * as uuid from "uuid";
 
 export default class TodoService implements Service {
   constructor(
@@ -28,6 +29,8 @@ export default class TodoService implements Service {
 
   async create(todoItem: CreateTodoRequest, userId: string): Promise<TodoItem> {
     const newTodoItem: TodoItem = {
+      todoId: uuid.v4(),
+      createdAt: new Date().toISOString(),
       done: false,
       userId,
       ...todoItem,
