@@ -39,7 +39,8 @@ provider:
 
   environment:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
-    TODO_SECONDARY_INDEX_NAME: 'title'
+    TODO_SECONDARY_LOCAL_INDEX_NAME: 'due_date_index'
+    TODO_GLOBAL_SECONDARY_INDEX_NAME: 'user_id_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
@@ -94,6 +95,13 @@ functions:
           method: delete
           path: todos/{todoId}
 
+  RemoveAttachment:
+    handler: src/dynamodb/lambdas/remove-attachment.handler
+    events:
+      - stream:
+          type: dynamodb
+          arn: !GetAtt TodosTable.StreamArn
+
   # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/todo-attachments/lambdas/generate-upload-url.handler
@@ -121,24 +129,31 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
-          - AttributeName: timestamp
-            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: N
           - AttributeName: title
+            AttributeType: S
+          - AttributeName: userId
             AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-          - AttributeName: sortKey
+          - AttributeName: createdAt
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         StreamSpecification:
           StreamViewType: OLD_IMAGE
-        LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODO_SECONDARY_INDEX_NAME}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODO_GLOBAL_SECONDARY_INDEX_NAME}
             KeySchema:
-              - AttributeName: id
-                KeyType: HASH
+            - AttributeName: userId
+              KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODO_SECONDARY_LOCAL_INDEX_NAME}
+            KeySchema:
               - AttributeName: dueDate
                 KeyType: RANGE
             Projection:

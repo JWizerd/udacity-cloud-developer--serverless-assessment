@@ -4,11 +4,13 @@ import { createLogger } from "../../utils/logger";
 import TodoService from "../service";
 import logStatements from "../log-statements";
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
+import { getUserId } from "../../utils/get-user-id";
 
-export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
+export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger, getUserId) => {
   try {
     const newTodo: CreateTodoRequest = JSON.parse(event.body);
-    const result = await service.create(newTodo);
+    const userId = getUserId(event);
+    const result = await service.create(newTodo, userId);
     logger.info(logStatements.create.success, newTodo);
 
     return {
@@ -28,6 +30,6 @@ export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const logger = createLogger(logStatements.create.name);
   const service = new TodoService();
-  return createTodo(event, service, logger);
+  return createTodo(event, service, logger, getUserId);
 }
 
