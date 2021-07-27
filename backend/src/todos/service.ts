@@ -40,12 +40,12 @@ export default class TodoService implements Service {
   }
 
   async update(todoId: string, todoItem: UpdateTodoRequest): Promise<TodoItem> {
-    const result = await this.client.update({
+    await this.client.update({
       TableName: this.table,
       Key: {
         todoId: todoId
       },
-      UpdateExpression: "set info.name = :a, info.dueDate=:b, info.done=:c",
+      UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c",
       ExpressionAttributeValues: {
         ":a": todoItem.name,
         ":b": todoItem.dueDate,
@@ -54,6 +54,6 @@ export default class TodoService implements Service {
       ReturnValues: "ALL_NEW"
     }).promise();
 
-    return result.$response.data as TodoItem;
+    return todoItem as TodoItem;
   }
 }

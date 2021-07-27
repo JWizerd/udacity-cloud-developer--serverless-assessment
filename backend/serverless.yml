@@ -133,7 +133,7 @@ resources:
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         StreamSpecification:
-          StreamViewType: NEW_TODO
+          StreamViewType: OLD_IMAGE
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.TODO_SECONDARY_INDEX_NAME}
             KeySchema:

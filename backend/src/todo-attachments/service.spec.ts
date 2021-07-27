@@ -1,16 +1,17 @@
 import { TodoAttachmentService } from "./service";
+import { awsSdkPromise } from "../utils/testing/aws-sdk-promise-response";
 import * as S3 from "aws-sdk/clients/s3";
 
 const mockBucketName = "test-bucket";
 const mockUrlExpDate = 300;
 const mockTodoId = "abc123";
-export const awsSdkPromiseResponse = jest.fn().mockReturnValue(Promise.resolve(true));
+
 
 jest.mock("aws-sdk/clients/s3", () => {
   return class {
     getSignedUrlPromise = jest.fn().mockResolvedValue(null)
     deleteObject = jest.fn().mockReturnThis()
-    promise = jest.fn().mockImplementation(() => ({ promise: awsSdkPromiseResponse }))
+    promise = awsSdkPromise()
   }
 });
 
