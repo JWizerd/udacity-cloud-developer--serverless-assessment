@@ -46,11 +46,11 @@ describe("TodoService", () => {
       const mockClient = new DocumentClientMock() as any;
       const todoService = new TodoService(mockClient, mockTableName);
 
-      await todoService.create(TodoMockCreateRequest, mockUserId);
+      const result = await todoService.create(TodoMockCreateRequest, mockUserId);
 
       expect(mockClient.put).toHaveBeenCalledWith({
         TableName: mockTableName,
-        Item: mockTodo
+        Item: result
       });
     });
 
@@ -61,7 +61,9 @@ describe("TodoService", () => {
 
       const result = await todoService.create(TodoMockCreateRequest, mockUserId);
 
-      expect(result).toEqual(mockTodo);
+      expect(result.createdAt).toBeDefined();
+      expect(result.todoId).toBeDefined();
+      expect(result.name).toBeDefined();
     });
   })
 
