@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Serverless TODO image app",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "dependencies": {
     "@types/axios": "^0.14.0",
