@@ -31,7 +31,7 @@ export class AuthService {
     return jwt;
   }
 
-  async getSigningKey(jwt: JwtManager.Jwt) {
+  async getSigningKey(jwt: JwtManager.Jwt): Promise<string> {
     const signingKey = await this.jwksClient.getSigningKey(jwt.header.kid);
     return signingKey.getPublicKey();
   }
