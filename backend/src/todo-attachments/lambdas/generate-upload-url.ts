@@ -1,3 +1,4 @@
+import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler'
 import { TodoAttachmentService } from '../service'
