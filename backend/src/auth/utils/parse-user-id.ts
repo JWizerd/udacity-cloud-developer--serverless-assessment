@@ -1,6 +1,6 @@
 import { decode } from 'jsonwebtoken'
 
-import { JwtPayload } from '../dtos/jwt-payload';
+import { JwtPayload } from '../types/jwt-payload';
 
 /**
  * Parse a JWT token and return a user id

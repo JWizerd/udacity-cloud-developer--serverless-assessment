@@ -42,14 +42,14 @@ provider:
     TODO_SECONDARY_LOCAL_INDEX_NAME: 'due_date_index'
     TODO_GLOBAL_SECONDARY_INDEX_NAME: 'user_id_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
-    AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
-    AUTH_0_SECRET_FIELD: auth0Secret
     SIGNED_URL_EXPIRATION: 300
 
 functions:
 
   Auth:
     handler: src/auth/lambdas/auth0-authorizer.handler
+    environment:
+      - AUTH_0_TENANT_DOMAIN: 'https://dev-dl7xpde6.us.auth0.com/'
 
   # TODO: Configure this function
   GetTodos:
@@ -207,37 +207,3 @@ resources:
                 - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.jpg
                 - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.png
         Bucket: !Ref TodoAttachmentsBucket
-
-    KMSKey:
-      Type: AWS::KMS::Key
-      Properties:
-        Description: KMS key to encrypt Auth0 secret
-        KeyPolicy:
-          Version: '2012-10-17'
-          Id: key-default-1
-          Statement:
-            - Sid: Allow administration of the key
-              Effect: Allow
-              Principal:
-                AWS:
-                  Fn::Join:
-                  - ':'
-                  - - 'arn:aws:iam:'
-                    - Ref: AWS::AccountId
-                    - 'root'
-              Action:
-                - 'kms:*'
-              Resource: '*'
-
-    KMSKeyAlias:
-      Type: AWS::KMS::Alias
-      Properties:
-        AliasName: alias/auth0Key-${self:provider.stage}
-        TargetKeyId: !Ref KMSKey
-
-    Auth0Secret:
-      Type: AWS::SecretsManager::Secret
-      Properties:
-        Name: ${self:provider.environment.AUTH_0_SECRET_ID}
-        Description: Auth0 secret
-        KmsKeyId: !Ref KMSKey
