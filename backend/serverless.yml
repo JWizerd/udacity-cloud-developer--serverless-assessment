@@ -41,7 +41,6 @@ provider:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
     TODO_GLOBAL_SECONDARY_INDEX_NAME: 'user_id_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
-    SIGNED_URL_EXPIRATION: 300
 
 functions:
 
@@ -138,6 +137,8 @@ functions:
   # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/todo-attachments/lambdas/generate-upload-url.handler
+    environment:
+      - SIGNED_URL_EXPIRATION: 300
     events:
       - http:
           method: post
