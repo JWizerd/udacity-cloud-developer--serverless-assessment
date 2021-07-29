@@ -39,7 +39,7 @@ provider:
 
   environment:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
-    TODO_GLOBAL_SECONDARY_INDEX_NAME: 'user_id_index'
+    TODO_GLOBAL_SECONDARY_INDEX_NAME: 'userid_created_at_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
 
 functions:
@@ -65,6 +65,7 @@ functions:
       - http:
           method: get
           path: todos
+          cors: true
 
   # TODO: Configure this function
   CreateTodo:
@@ -78,6 +79,7 @@ functions:
       - http:
           method: post
           path: todos
+          cors: true
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Create a new todo
@@ -97,6 +99,7 @@ functions:
       - http:
           method: patch
           path: todos/{todoId}
+          cors: true
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Update a new todo
@@ -116,6 +119,7 @@ functions:
       - http:
           method: delete
           path: todos/{todoId}
+          cors: true
 
   RemoveAttachment:
     handler: src/dynamodb/lambdas/remove-attachment.handler
@@ -143,6 +147,7 @@ functions:
       - http:
           method: post
           path: todos/{todoId}/attachment
+          cors: true
 
 resources:
   Resources:
@@ -164,25 +169,25 @@ resources:
           - AttributeName: id
             AttributeType: S
           - AttributeName: createdAt
-            AttributeType: N
-          - AttributeName: title
             AttributeType: S
           - AttributeName: userId
             AttributeType: S
         KeySchema:
-          - AttributeName: id
+        - AttributeName: userId
             KeyType: HASH
-          - AttributeName: createdAt
+          - AttributeName: id
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         StreamSpecification:
           StreamViewType: OLD_IMAGE
-        GlobalSecondaryIndexes:
+        LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.TODO_GLOBAL_SECONDARY_INDEX_NAME}
             KeySchema:
             - AttributeName: userId
               KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
             Projection:
               ProjectionType: ALL
 
