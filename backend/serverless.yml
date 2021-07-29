@@ -49,7 +49,7 @@ functions:
   Auth:
     handler: src/auth/lambdas/auth0-authorizer.handler
     environment:
-      - AUTH_0_TENANT_DOMAIN: 'https://dev-dl7xpde6.us.auth0.com/'
+      - AUTH0_JWKS_ENDPOINT: 'https://dev-dl7xpde6.us.auth0.com/.well-known/jwks.json'
 
   # TODO: Configure this function
   GetTodos:

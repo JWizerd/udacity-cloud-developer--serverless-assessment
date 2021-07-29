@@ -1,7 +1,7 @@
 import { JwksClientMock, getPublicKey } from "./__mocks__/auth0-mock-jwks-client";
+import { publicSigningKeyMock } from "./__mocks__/public-signing-key-mock";
 import auth0ClientResultMock from "./__mocks__/auth0-client-result";
 import auth0DecodedJwtMock from "./__mocks__/auth0-decoded-jwt";
-import auth0JwksMock from "./__mocks__/auth0-jwks";
 import { noKidJwtMock } from "./__mocks__/no-kid-jwt";
 import * as JwtManager from 'jsonwebtoken';
 import { AuthService } from "./service";
@@ -75,16 +75,15 @@ describe("AuthService", () => {
   describe('verifyToken', () => {
     it('should call verifyToken with correct params', async () => {
       const mockBearerToken = `Bearer ${auth0ClientResultMock.idToken}`;
-      jest.spyOn(service, "getToken").mockReturnValue(auth0ClientResultMock.idToken)
-      jest.spyOn(service, "decodeToken").mockReturnValue(auth0DecodedJwtMock)
-      jest.spyOn(service, "getSigningKey").mockResolvedValue(auth0JwksMock.keys[0].x5c[0])
-      jest.spyOn(service, "getSigningKey").mockResolvedValue(auth0JwksMock.keys[0].x5c[0])
+      jest.spyOn(service, "getToken").mockReturnValue(auth0ClientResultMock.idToken);
+      jest.spyOn(service, "decodeToken").mockReturnValue(auth0DecodedJwtMock);
+      jest.spyOn(service, "getSigningKey").mockResolvedValue(publicSigningKeyMock);
       const verifySpy = jest.spyOn(JwtManager, "verify").mockImplementation(null);
-      await service.verifyToken(mockBearerToken)
+      await service.verifyToken(mockBearerToken);
       expect(verifySpy).toHaveBeenCalledTimes(1);
       expect(verifySpy).toHaveBeenCalledWith(
         auth0ClientResultMock.idToken,
-        auth0JwksMock.keys[0].x5c[0],
+        publicSigningKeyMock,
         {
           algorithms: ["RS256"],
           complete: true

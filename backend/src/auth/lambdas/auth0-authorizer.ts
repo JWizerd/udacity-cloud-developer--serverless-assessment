@@ -1,20 +1,15 @@
 import 'source-map-support/register'
-import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
-import * as middy from 'middy'
-import { secretsManager } from 'middy/middlewares'
+import { APIGatewayTokenAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
+import { AuthService } from '../service'
+import logStatements from '../log-statements'
+import { Logger } from 'winston'
+import { createLogger } from '../../utils/logger'
 
-import { verify } from 'jsonwebtoken'
-
-const secretId = process.env.AUTH_0_SECRET_ID
-const secretField = process.env.AUTH_0_SECRET_FIELD
-
-export const handler = async (event: CustomAuthorizerEvent, context): Promise<CustomAuthorizerResult> => {
+export const authorizer = async (event: APIGatewayTokenAuthorizerEvent, service: AuthService, logger: Logger) => {
   try {
-    const decodedToken = verifyToken(
-      event.authorizationToken,
-      context.AUTH0_SECRET[secretField]
-    )
-    console.log('User was authorized', decodedToken)
+    const decodedToken = await service.verifyToken(event.authorizationToken);
+
+    logger.info(logStatements.authorizer.success, decodedToken)
 
     return {
       principalId: decodedToken.sub,
@@ -30,7 +25,7 @@ export const handler = async (event: CustomAuthorizerEvent, context): Promise<Cu
       }
     }
   } catch (e) {
-    console.log('User was not authorized', e.message)
+    logger.error(logStatements.authorizer.error, e)
 
     return {
       principalId: 'user',
@@ -46,4 +41,10 @@ export const handler = async (event: CustomAuthorizerEvent, context): Promise<Cu
       }
     }
   }
+}
+
+export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<CustomAuthorizerResult> => {
+  const service = new AuthService();
+  const logger = createLogger(logStatements.authorizer.name);
+  return authorizer(event, service, logger)
 }

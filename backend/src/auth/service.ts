@@ -7,11 +7,11 @@ export class AuthService {
   constructor(
     private readonly jwtManager = JwtManager,
     private readonly jwksClient: JwksClient = new JwksClient({
-      jwksUri: process.env.AUTH0_TENANT_DOMAIN
+      jwksUri: process.env.AUTH0_JWKS_ENDPOINT
     })
   ) {}
 
-  async verifyToken(authHeader: string): Promise<JwtManager.JwtPayload|string> {
+  async verifyToken(authHeader: string): Promise<JwtManager.JwtPayload> {
     const token = this.getToken(authHeader);
     const tokenDecoded = this.decodeToken(token);
     const signingKey = await this.getSigningKey(tokenDecoded);
@@ -22,7 +22,7 @@ export class AuthService {
         algorithms: ["RS256"],
         complete: true
       }
-    );
+    ) as JwtManager.Jwt;
   }
 
   decodeToken(token: string) {
@@ -33,6 +33,7 @@ export class AuthService {
 
   async getSigningKey(jwt: JwtManager.Jwt): Promise<string> {
     const signingKey = await this.jwksClient.getSigningKey(jwt.header.kid);
+    if (!signingKey) throw new Error(logStatements.getSigningKey.error.noAssocKey);
     return signingKey.getPublicKey();
   }
 
