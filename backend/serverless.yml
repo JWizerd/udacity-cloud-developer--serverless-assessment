@@ -39,7 +39,6 @@ provider:
 
   environment:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
-    TODO_SECONDARY_LOCAL_INDEX_NAME: 'due_date_index'
     TODO_GLOBAL_SECONDARY_INDEX_NAME: 'user_id_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
     SIGNED_URL_EXPIRATION: 300
@@ -54,6 +53,15 @@ functions:
   # TODO: Configure this function
   GetTodos:
     handler: src/todos/lambdas/list.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODO_GLOBAL_SECONDARY_INDEX_NAME}
     events:
       - http:
           method: get
@@ -62,6 +70,11 @@ functions:
   # TODO: Configure this function
   CreateTodo:
     handler: src/todos/lambdas/create.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     events:
       - http:
           method: post
@@ -76,6 +89,11 @@ functions:
   # TODO: Configure this function
   UpdateTodo:
     handler: src/todos/lambdas/update.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     events:
       - http:
           method: patch
@@ -90,6 +108,11 @@ functions:
   # TODO: Configure this function
   DeleteTodo:
     handler: src/todos/lambdas/delete.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/stream/
     events:
       - http:
           method: delete
@@ -97,6 +120,16 @@ functions:
 
   RemoveAttachment:
     handler: src/dynamodb/lambdas/remove-attachment.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - S3:DeleteObject
+        Resource: arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:GetRecords
+        Resource: !GetAtt TodosTable.StreamArn
+
     events:
       - stream:
           type: dynamodb
@@ -151,13 +184,6 @@ resources:
               KeyType: HASH
             Projection:
               ProjectionType: ALL
-        LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODO_SECONDARY_LOCAL_INDEX_NAME}
-            KeySchema:
-              - AttributeName: dueDate
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL # What attributes will be copied to an index
 
     RequestBodyValidator:
       Type: AWS::ApiGateway::RequestValidator
@@ -204,6 +230,5 @@ resources:
               Principal: '*'
               Ation: 's3:PutObject'
               Resource:
-                - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.jpg
-                - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.png
+                - 'arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*'
         Bucket: !Ref TodoAttachmentsBucket
