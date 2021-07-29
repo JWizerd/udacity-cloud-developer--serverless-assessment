@@ -1,6 +1,6 @@
 import { AuthServiceMock, decodedTokenMock } from "../__mocks__/auth-service";
 import { createLogger } from "../../utils/logger";
-import { authorizer } from "./auth0-authorizer";
+import { authorizer } from "./authorizer";
 import logStatements from "../log-statements";
 import { APIGatewayTokenAuthorizerEventMock as event } from "../__mocks__/api-gateway-token-auth-event";
 

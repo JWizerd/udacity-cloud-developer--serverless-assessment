@@ -37,6 +37,10 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
 
+  tracing:
+    apiGateway: true
+    lambda: true
+
   environment:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
     TODO_GLOBAL_SECONDARY_INDEX_NAME: 'userid_created_at_index'
@@ -45,7 +49,7 @@ provider:
 functions:
 
   Auth:
-    handler: src/auth/lambdas/auth0-authorizer.handler
+    handler: src/auth/lambdas/authorizer.handler
     environment:
       - AUTH0_JWKS_ENDPOINT: 'https://dev-dl7xpde6.us.auth0.com/.well-known/jwks.json'
 
@@ -66,6 +70,7 @@ functions:
           method: get
           path: todos
           cors: true
+          authorizer: Auth
 
   # TODO: Configure this function
   CreateTodo:
@@ -80,6 +85,7 @@ functions:
           method: post
           path: todos
           cors: true
+          authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Create a new todo
@@ -100,6 +106,7 @@ functions:
           method: patch
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Update a new todo
@@ -120,6 +127,7 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
 
   RemoveAttachment:
     handler: src/dynamodb/lambdas/remove-attachment.handler
@@ -148,6 +156,7 @@ functions:
           method: post
           path: todos/{todoId}/attachment
           cors: true
+          authorizer: Auth
 
 resources:
   Resources:

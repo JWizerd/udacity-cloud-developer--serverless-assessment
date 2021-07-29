@@ -4,6 +4,8 @@ import { createLogger } from "../../utils/logger";
 import TodoService from "../service";
 import logStatements from "../log-statements";
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
+import * as middy from 'middy'
+import { cors, httpErrorHandler } from 'middy/middlewares'
 
 export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
   try {
@@ -25,8 +27,16 @@ export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent
   }
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const logger = createLogger(logStatements.delete.name);
-  const service = new TodoService();
-  return deleteTodo(event, service, logger);
-}
+export const handler = middy(
+  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    const logger = createLogger(logStatements.delete.name);
+    const service = new TodoService();
+    return deleteTodo(event, service, logger);
+  }
+);
+
+handler
+  .use(httpErrorHandler())
+  .use(cors({
+  credentials: true
+}));

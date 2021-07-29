@@ -5,6 +5,8 @@ import { TodoAttachmentService } from '../service'
 import { createLogger } from "../../utils/logger";
 import logStatements from '../log-statements';
 import { AttachmentsService } from '../attachments-service.interface';
+import * as middy from 'middy'
+import { cors, httpErrorHandler } from 'middy/middlewares'
 
 export const generateUploadUrl: LambdaEventHandler = async (
   event: APIGatewayProxyEvent,
@@ -29,8 +31,16 @@ export const generateUploadUrl: LambdaEventHandler = async (
     }
 
 }
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const service = new TodoAttachmentService();
-  const logger = createLogger(logStatements.generateUploadUrl.name);
-  return generateUploadUrl(event, service, logger);
-}
+export const handler = middy(
+  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    const service = new TodoAttachmentService();
+    const logger = createLogger(logStatements.generateUploadUrl.name);
+    return generateUploadUrl(event, service, logger);
+  }
+);
+
+handler
+  .use(httpErrorHandler())
+  .use(cors({
+    credentials: true
+  }));
