@@ -1,3 +1,4 @@
+import 'source-map-support/register'
 import { DynamoDBStreamEvent, DynamoDBStreamHandler } from "aws-lambda";
 import { LambdaEventHandler } from "../../interfaces/lambda-custom-event-handler";
 import logStatements from "../log-statements";

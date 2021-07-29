@@ -1,7 +1,7 @@
 import { createLogger } from "../../utils/logger";
 import { generateUploadUrl } from "./generate-upload-url";
 import logStatements from "../log-statements";
-import { TodoAttachmentsServiceMock } from "../__mocks__/service";
+import { TodoAttachmentsServiceMock } from "../__mocks__/todo-attachments-service";
 import APIGatewayProxyEventMock from "../__mocks__/api-gateway-event";
 
 const logger = createLogger("test");

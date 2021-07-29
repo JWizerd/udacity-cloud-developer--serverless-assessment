@@ -1,31 +1,43 @@
 import { awsSdkPromise } from "../utils/testing/aws-sdk-promise-response";
 import TodoService from "./service";
-import { DocumentClientMock, TodoCollectionMock, TodoMockCreateRequest, TodoMockUpdateRequest } from "./__mocks__";
+import { DocumentClientMock, TodoMockCreateRequest, TodoMockUpdateRequest } from "./__mocks__";
 const mockTableName = "test-table";
 const mockTodoId = "abc123";
+const mockUserId = "1";
+const mockTodo = {
+  ...TodoMockCreateRequest,
+  userId: mockUserId,
+  done: false
+}
+process.env.TODO_SECONDARY_LOCAL_INDEX_NAME = "test_index";
+const mockCollection = [mockTodo, mockTodo, mockTodo]
+
 describe("TodoService", () => {
   describe("findAll", () => {
     it('should call DocumentClient.query with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
       const todoService = new TodoService(mockClient, mockTableName);
 
-      await todoService.findAll();
+      await todoService.findAll(mockUserId);
 
       expect(mockClient.query).toHaveBeenCalledWith({
+        ExpressionAttributeValues: {
+          ':userId': mockUserId
+        },
+        IndexName: process.env.TODO_SECONDARY_LOCAL_INDEX_NAME,
+        KeyConditionExpression: 'userId = :s',
         TableName: mockTableName
       });
     });
 
     it('should return a collection todo items', async () => {
       const mockClient = new DocumentClientMock() as any;
-      mockClient.promise = awsSdkPromise({Items: TodoCollectionMock});
+      mockClient.promise = awsSdkPromise({ Items: mockCollection});
       const todoService = new TodoService(mockClient, mockTableName);
 
-      await todoService.findAll();
+      const results = await todoService.findAll(mockUserId);
 
-      expect(mockClient.query).toHaveBeenCalledWith({
-        TableName: mockTableName
-      });
+      expect(results).toBe(mockCollection);
     });
   });
 
@@ -34,11 +46,11 @@ describe("TodoService", () => {
       const mockClient = new DocumentClientMock() as any;
       const todoService = new TodoService(mockClient, mockTableName);
 
-      await todoService.create(TodoMockCreateRequest);
+      const result = await todoService.create(TodoMockCreateRequest, mockUserId);
 
       expect(mockClient.put).toHaveBeenCalledWith({
         TableName: mockTableName,
-        Item: TodoMockCreateRequest
+        Item: result
       });
     });
 
@@ -47,9 +59,11 @@ describe("TodoService", () => {
       mockClient.promise = awsSdkPromise(TodoMockCreateRequest);
       const todoService = new TodoService(mockClient, mockTableName);
 
-      const result = await todoService.create(TodoMockCreateRequest);
+      const result = await todoService.create(TodoMockCreateRequest, mockUserId);
 
-      expect(result).toBe(TodoMockCreateRequest);
+      expect(result.createdAt).toBeDefined();
+      expect(result.todoId).toBeDefined();
+      expect(result.name).toBeDefined();
     });
   })
 

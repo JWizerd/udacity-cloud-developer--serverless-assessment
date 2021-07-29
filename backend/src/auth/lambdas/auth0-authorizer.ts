@@ -1,29 +1,18 @@
-import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
-
-import { verify, decode } from 'jsonwebtoken'
+import { APIGatewayTokenAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
+import { AuthService } from '../service'
+import logStatements from '../log-statements'
+import { Logger } from 'winston'
 import { createLogger } from '../../utils/logger'
-import Axios from 'axios'
-import { Jwt } from '../dtos/jwt';
-import { JwtPayload } from '../dtos/jwt-payload';
 
-const logger = createLogger('auth')
-
-// TODO: Provide a URL that can be used to download a certificate that can be used
-// to verify JWT token signature.
-// To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
-const jwksUrl = '...'
-
-export const handler = async (
-  event: CustomAuthorizerEvent
-): Promise<CustomAuthorizerResult> => {
-  logger.info('Authorizing a user', event.authorizationToken)
+export const authorizer = async (event: APIGatewayTokenAuthorizerEvent, service: AuthService, logger: Logger) => {
   try {
-    const jwtToken = await verifyToken(event.authorizationToken)
-    logger.info('User was authorized', jwtToken)
+    const decodedToken = await service.verifyToken(event.authorizationToken);
+
+    logger.info(logStatements.authorizer.success, decodedToken)
 
     return {
-      principalId: jwtToken.sub,
+      principalId: decodedToken.sub,
       policyDocument: {
         Version: '2012-10-17',
         Statement: [
@@ -36,7 +25,7 @@ export const handler = async (
       }
     }
   } catch (e) {
-    logger.error('User not authorized', { error: e.message })
+    logger.error(logStatements.authorizer.error, e)
 
     return {
       principalId: 'user',
@@ -54,24 +43,8 @@ export const handler = async (
   }
 }
 
-async function verifyToken(authHeader: string): Promise<JwtPayload> {
-  const token = getToken(authHeader)
-  const jwt: Jwt = decode(token, { complete: true }) as Jwt
-
-  // TODO: Implement token verification
-  // You should implement it similarly to how it was implemented for the exercise for the lesson 5
-  // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
-  return undefined
-}
-
-function getToken(authHeader: string): string {
-  if (!authHeader) throw new Error('No authentication header')
-
-  if (!authHeader.toLowerCase().startsWith('bearer '))
-    throw new Error('Invalid authentication header')
-
-  const split = authHeader.split(' ')
-  const token = split[1]
-
-  return token
+export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<CustomAuthorizerResult> => {
+  const service = new AuthService();
+  const logger = createLogger(logStatements.authorizer.name);
+  return authorizer(event, service, logger)
 }

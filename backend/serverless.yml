@@ -39,20 +39,29 @@ provider:
 
   environment:
     TODOS_TABLE: 'Todos-${self:provider.stage}'
-    TODO_SECONDARY_INDEX_NAME: 'title'
+    TODO_GLOBAL_SECONDARY_INDEX_NAME: 'user_id_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
-    AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
-    AUTH_0_SECRET_FIELD: auth0Secret
     SIGNED_URL_EXPIRATION: 300
 
 functions:
 
   Auth:
     handler: src/auth/lambdas/auth0-authorizer.handler
+    environment:
+      - AUTH0_JWKS_ENDPOINT: 'https://dev-dl7xpde6.us.auth0.com/.well-known/jwks.json'
 
   # TODO: Configure this function
   GetTodos:
     handler: src/todos/lambdas/list.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODO_GLOBAL_SECONDARY_INDEX_NAME}
     events:
       - http:
           method: get
@@ -61,6 +70,11 @@ functions:
   # TODO: Configure this function
   CreateTodo:
     handler: src/todos/lambdas/create.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     events:
       - http:
           method: post
@@ -75,6 +89,11 @@ functions:
   # TODO: Configure this function
   UpdateTodo:
     handler: src/todos/lambdas/update.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     events:
       - http:
           method: patch
@@ -89,10 +108,32 @@ functions:
   # TODO: Configure this function
   DeleteTodo:
     handler: src/todos/lambdas/delete.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/stream/
     events:
       - http:
           method: delete
           path: todos/{todoId}
+
+  RemoveAttachment:
+    handler: src/dynamodb/lambdas/remove-attachment.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - S3:DeleteObject
+        Resource: arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:GetRecords
+        Resource: !GetAtt TodosTable.StreamArn
+
+    events:
+      - stream:
+          type: dynamodb
+          arn: !GetAtt TodosTable.StreamArn
 
   # TODO: Configure this function
   GenerateUploadUrl:
@@ -121,28 +162,28 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
-          - AttributeName: timestamp
-            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: N
           - AttributeName: title
+            AttributeType: S
+          - AttributeName: userId
             AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
-          - AttributeName: sortKey
+          - AttributeName: createdAt
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         StreamSpecification:
           StreamViewType: OLD_IMAGE
-        LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODO_SECONDARY_INDEX_NAME}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODO_GLOBAL_SECONDARY_INDEX_NAME}
             KeySchema:
-              - AttributeName: id
-                KeyType: HASH
-              - AttributeName: dueDate
-                KeyType: RANGE
+            - AttributeName: userId
+              KeyType: HASH
             Projection:
-              ProjectionType: ALL # What attributes will be copied to an index
+              ProjectionType: ALL
 
     RequestBodyValidator:
       Type: AWS::ApiGateway::RequestValidator
@@ -189,40 +230,5 @@ resources:
               Principal: '*'
               Ation: 's3:PutObject'
               Resource:
-                - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.jpg
-                - arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*.png
+                - 'arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*'
         Bucket: !Ref TodoAttachmentsBucket
-
-    KMSKey:
-      Type: AWS::KMS::Key
-      Properties:
-        Description: KMS key to encrypt Auth0 secret
-        KeyPolicy:
-          Version: '2012-10-17'
-          Id: key-default-1
-          Statement:
-            - Sid: Allow administration of the key
-              Effect: Allow
-              Principal:
-                AWS:
-                  Fn::Join:
-                  - ':'
-                  - - 'arn:aws:iam:'
-                    - Ref: AWS::AccountId
-                    - 'root'
-              Action:
-                - 'kms:*'
-              Resource: '*'
-
-    KMSKeyAlias:
-      Type: AWS::KMS::Alias
-      Properties:
-        AliasName: alias/auth0Key-${self:provider.stage}
-        TargetKeyId: !Ref KMSKey
-
-    Auth0Secret:
-      Type: AWS::SecretsManager::Secret
-      Properties:
-        Name: ${self:provider.environment.AUTH_0_SECRET_ID}
-        Description: Auth0 secret
-        KmsKeyId: !Ref KMSKey

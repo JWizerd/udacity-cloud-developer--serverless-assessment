@@ -4,6 +4,7 @@ import { TodoItem } from "./models/todo-item";
 import { CreateTodoRequest } from "./dtos/create";
 import { UpdateTodoRequest } from "./dtos/update";
 import { Service } from "../interfaces/service";
+import * as uuid from "uuid";
 
 export default class TodoService implements Service {
   constructor(
@@ -11,21 +12,36 @@ export default class TodoService implements Service {
     private readonly table: string = process.env.GROUPS_TABLE
   ) {}
 
-  async findAll(): Promise<TodoItem[]> {
-    const result = await this.client.query({
-      TableName: this.table,
-    }).promise();
+  async findAll(userId: string): Promise<TodoItem[]> {
+    var params: DocumentClient.QueryInput = {
+      ExpressionAttributeValues: {
+        ':userId': userId
+      },
+      IndexName: process.env.TODO_SECONDARY_LOCAL_INDEX_NAME,
+      KeyConditionExpression: 'userId = :s',
+      TableName: this.table
+    };
+
+    const result = await this.client.query(params).promise();
 
     return result.Items as TodoItem[];
   }
 
-  async create(todoItem: CreateTodoRequest): Promise<TodoItem> {
+  async create(todoItem: CreateTodoRequest, userId: string): Promise<TodoItem> {
+    const newTodoItem: TodoItem = {
+      todoId: uuid.v4(),
+      createdAt: new Date().toISOString(),
+      done: false,
+      userId,
+      ...todoItem,
+    } as TodoItem;
+
     await this.client.put({
       TableName: this.table,
-      Item: todoItem
+      Item: newTodoItem
     }).promise();
 
-    return todoItem as TodoItem;
+    return newTodoItem as TodoItem;
   }
 
   async delete(todoId: string): Promise<string> {
