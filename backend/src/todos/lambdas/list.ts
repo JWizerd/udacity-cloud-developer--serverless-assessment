@@ -1,5 +1,5 @@
 import 'source-map-support/register';
-import { APIGatewayProxyResult, APIGatewayProxyHandler, APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 import { createLogger } from "../../utils/logger";
 import TodoService from '../service';
 import logStatements from '../log-statements';
