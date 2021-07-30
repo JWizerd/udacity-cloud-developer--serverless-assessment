@@ -30,7 +30,7 @@ export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent
   }
 }
 
-const handler = middy(
+export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const logger = createLogger(logStatements.create.name);
     const repository = new TodoRepository();

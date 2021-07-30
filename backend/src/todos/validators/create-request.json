@@ -7,8 +7,7 @@
       "type": "string"
     },
     "dueDate": {
-      "type": "string",
-      "format": "date-time"
+      "type": "string"
     },
     "done": {
       "type": "boolean"
@@ -19,7 +18,6 @@
   },
   "required": [
     "name",
-    "description",
     "dueDate"
   ],
   "additionalProperties": false
