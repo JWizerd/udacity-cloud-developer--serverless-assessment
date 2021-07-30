@@ -42,7 +42,7 @@ provider:
     lambda: true
 
   environment:
-    TODOS_TABLE: 'Todos-${self:provider.stage}'
+    TODOS_TABLE: 'Todos-Table-${self:provider.stage}'
     TODO_GLOBAL_SECONDARY_INDEX_NAME: 'userid_created_at_index'
     TODO_ATTACHMENTS_S3_BUCKET: 'todo-attachments-bucket-${self:provider.stage}'
 

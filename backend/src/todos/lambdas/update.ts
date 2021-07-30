@@ -4,7 +4,7 @@ import { UpdateTodoRequest } from '../dtos/update';
 import TodoRepository from "../todo-repository";
 import logStatements from '../log-statements';
 import { createLogger } from "../../utils/logger";
-import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
+import { LambdaEventHandler } from '../../types/lambda-custom-event-handler';
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
 

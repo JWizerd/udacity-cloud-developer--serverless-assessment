@@ -1,6 +1,6 @@
 
 import * as S3 from "aws-sdk/clients/s3";
-import { AttachmentsRepositoryInterface } from "./attachments-repository.interface";
+import { AttachmentsRepositoryInterface } from "./types/attachments-repository.interface";
 import { getS3Client } from "./utils/get-client";
 
 export class AttachmentsRepository implements AttachmentsRepositoryInterface {

@@ -3,7 +3,7 @@ import { createDynamoDBClient } from '../dynamodb/utils/get-client';
 import { TodoItem } from "./models/todo-item";
 import { CreateTodoRequest } from "./dtos/create";
 import { UpdateTodoRequest } from "./dtos/update";
-import { Repository } from "../interfaces/repository";
+import { Repository } from "../types/repository";
 import * as uuid from "uuid";
 
 export default class TodoRepository implements Repository {
@@ -18,7 +18,7 @@ export default class TodoRepository implements Repository {
         ':userId': userId
       },
       IndexName: process.env.TODO_SECONDARY_LOCAL_INDEX_NAME,
-      KeyConditionExpression: 'userId = :s',
+      KeyConditionExpression: 'userId = :userId',
       TableName: this.table
     };
 

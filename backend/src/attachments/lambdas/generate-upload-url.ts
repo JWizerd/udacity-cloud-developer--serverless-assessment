@@ -1,6 +1,6 @@
 import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler'
+import { LambdaEventHandler } from '../../types/lambda-custom-event-handler'
 import { createLogger } from "../../utils/logger";
 import logStatements from '../log-statements';
 import { AttachmentsRepository } from '../attachments-repository';
