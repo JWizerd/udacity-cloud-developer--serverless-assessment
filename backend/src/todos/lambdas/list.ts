@@ -16,7 +16,7 @@ export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent,
 
     return {
       statusCode: 200,
-      body: JSON.stringify(todos)
+      body: JSON.stringify({ items: todos })
     }
   } catch (error) {
     logger.error(logStatements.findAll.error, error);

@@ -1,0 +1,1 @@
+export const awsSdkPromise = (mockValue: any = true) => jest.fn().mockResolvedValue(mockValue);
