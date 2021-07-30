@@ -1,3 +1,3 @@
-export const TodoAttachmentsServiceMock = {
+export const AttachmentsRepositoryMock = {
   delete: jest.fn()
 }

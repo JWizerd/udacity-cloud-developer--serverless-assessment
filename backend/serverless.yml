@@ -148,7 +148,7 @@ functions:
 
   # TODO: Configure this function
   GenerateUploadUrl:
-    handler: src/todo-attachments/lambdas/generate-upload-url.handler
+    handler: src/attachments/lambdas/generate-upload-url.handler
     environment:
       - SIGNED_URL_EXPIRATION: 300
     events:
@@ -182,7 +182,7 @@ resources:
           - AttributeName: userId
             AttributeType: S
         KeySchema:
-        - AttributeName: userId
+          - AttributeName: userId
             KeyType: HASH
           - AttributeName: id
             KeyType: RANGE

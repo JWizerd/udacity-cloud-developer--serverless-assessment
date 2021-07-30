@@ -1,16 +1,16 @@
 import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { createLogger } from "../../utils/logger";
-import TodoService from "../service";
+import TodoRepository from "../todo-repository";
 import logStatements from "../log-statements";
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
 
-export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger) => {
+export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger) => {
   try {
     const todoId = event.pathParameters.todoId
-    await service.delete(todoId);
+    await repository.delete(todoId);
     logger.info(logStatements.delete.success, todoId);
 
     return {
@@ -30,8 +30,8 @@ export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const logger = createLogger(logStatements.delete.name);
-    const service = new TodoService();
-    return deleteTodo(event, service, logger);
+    const repository = new TodoRepository();
+    return deleteTodo(event, repository, logger);
   }
 );
 

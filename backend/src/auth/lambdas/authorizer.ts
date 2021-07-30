@@ -5,7 +5,7 @@ import logStatements from '../log-statements'
 import { Logger } from 'winston'
 import { createLogger } from '../../utils/logger'
 
-export const authorizer = async (event: APIGatewayTokenAuthorizerEvent, service: AuthService, logger: Logger) => {
+export const handleAuthorization = async (event: APIGatewayTokenAuthorizerEvent, service: AuthService, logger: Logger) => {
   try {
     const decodedToken = await service.verifyToken(event.authorizationToken);
 
@@ -46,5 +46,5 @@ export const authorizer = async (event: APIGatewayTokenAuthorizerEvent, service:
 export const handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<CustomAuthorizerResult> => {
   const service = new AuthService();
   const logger = createLogger(logStatements.authorizer.name);
-  return authorizer(event, service, logger)
+  return handleAuthorization(event, service, logger)
 }

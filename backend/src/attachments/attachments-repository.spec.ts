@@ -1,4 +1,4 @@
-import { TodoAttachmentService } from "./service";
+import { AttachmentsRepository } from "./attachments-repository";
 import { awsSdkPromise } from "../utils/testing/aws-sdk-promise-response";
 import * as S3 from "aws-sdk/clients/s3";
 
@@ -16,12 +16,12 @@ jest.mock("aws-sdk/clients/s3", () => {
 });
 
 let s3;
-let Service;
+let Repository;
 
-describe('TodoAttachmentService', () => {
+describe('AttachmentsRepository', () => {
   beforeEach(() => {
     s3 = new S3();
-    Service = new TodoAttachmentService(s3, mockBucketName, mockUrlExpDate)
+    Repository = new AttachmentsRepository(s3, mockBucketName, mockUrlExpDate)
   });
 
   afterEach(() => {
@@ -29,7 +29,7 @@ describe('TodoAttachmentService', () => {
   });
 
   it('should return a signed url with the correct properties', async () => {
-    await Service.getUploadUrl(mockTodoId);
+    await Repository.getUploadUrl(mockTodoId);
     expect(s3.getSignedUrlPromise).toHaveBeenCalledTimes(1);
     expect(s3.getSignedUrlPromise).toHaveBeenCalledWith("putObject", {
       Bucket: mockBucketName,
@@ -39,7 +39,7 @@ describe('TodoAttachmentService', () => {
   });
 
   it('should all s3.deleteObject with correct params', async () => {
-    await Service.delete(mockTodoId);
+    await Repository.delete(mockTodoId);
     expect(s3.deleteObject).toHaveBeenCalledTimes(1);
     expect(s3.deleteObject).toHaveBeenCalledWith({
       Key: mockTodoId,

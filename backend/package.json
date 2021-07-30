@@ -18,7 +18,8 @@
     "serverless-offline": "^7.1.0",
     "source-map-support": "^0.5.11",
     "uuid": "^3.3.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "aws-sdk": "^2.957.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.81",
@@ -27,7 +28,6 @@
     "@types/node": "^10.14.4",
     "@types/serverless": "^1.78.32",
     "@types/uuid": "^8.3.1",
-    "aws-sdk": "^2.957.0",
     "jest": "^27.0.6",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-iam-roles-per-function": "^1.0.4",

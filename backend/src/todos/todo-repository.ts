@@ -3,10 +3,10 @@ import { createDynamoDBClient } from '../dynamodb/utils/get-client';
 import { TodoItem } from "./models/todo-item";
 import { CreateTodoRequest } from "./dtos/create";
 import { UpdateTodoRequest } from "./dtos/update";
-import { Service } from "../interfaces/service";
+import { Repository } from "../interfaces/repository";
 import * as uuid from "uuid";
 
-export default class TodoService implements Service {
+export default class TodoRepository implements Repository {
   constructor(
     private readonly client: DocumentClient = createDynamoDBClient(),
     private readonly table: string = process.env.GROUPS_TABLE

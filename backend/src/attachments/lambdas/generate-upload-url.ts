@@ -1,20 +1,19 @@
 import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler'
-import { TodoAttachmentService } from '../service'
 import { createLogger } from "../../utils/logger";
 import logStatements from '../log-statements';
-import { AttachmentsService } from '../attachments-service.interface';
+import { AttachmentsRepository } from '../attachments-repository';
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
 
 export const generateUploadUrl: LambdaEventHandler = async (
   event: APIGatewayProxyEvent,
-  service: AttachmentsService,
+  repository: AttachmentsRepository,
   logger) => {
     try {
       const todoId = event.pathParameters.todoId;
-      const url = await service.getUploadUrl(todoId);
+      const url = await repository.getUploadUrl(todoId);
       logger.info(logStatements.generateUploadUrl.success, url);
 
       return {
@@ -33,9 +32,9 @@ export const generateUploadUrl: LambdaEventHandler = async (
 }
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const service = new TodoAttachmentService();
+    const repository = new AttachmentsRepository();
     const logger = createLogger(logStatements.generateUploadUrl.name);
-    return generateUploadUrl(event, service, logger);
+    return generateUploadUrl(event, repository, logger);
   }
 );
 
