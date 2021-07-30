@@ -9,7 +9,7 @@ import * as uuid from "uuid";
 export default class TodoRepository implements Repository {
   constructor(
     private readonly client: DocumentClient = createDynamoDBClient(),
-    private readonly table: string = process.env.GROUPS_TABLE
+    private readonly table: string = process.env.TODOS_TABLE
   ) {}
 
   async findAll(userId: string): Promise<TodoItem[]> {
