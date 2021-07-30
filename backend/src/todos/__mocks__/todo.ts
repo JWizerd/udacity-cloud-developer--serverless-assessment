@@ -22,4 +22,4 @@ export const TodoMockUpdateRequest: UpdateTodoRequest = {
   done: false
 }
 
-export const TodoCollectionMock: TodoItem[] = [TodoMock, TodoMock, TodoMock];
+export const TodoCollectionMock = [TodoMock, TodoMock];

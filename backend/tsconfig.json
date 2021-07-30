@@ -3,6 +3,7 @@
     "lib": [
       "es2017"
     ],
+    "types": ["@types/jest"],
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -10,6 +11,9 @@
     "target": "es2017",
     "outDir": "lib"
   },
+  "include": [
+    "**/*.spec.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

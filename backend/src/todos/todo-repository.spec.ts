@@ -1,5 +1,5 @@
 import { awsSdkPromise } from "../utils/testing/aws-sdk-promise-response";
-import TodoService from "./service";
+import TodoRepository from "./todo-repository";
 import { DocumentClientMock, TodoMockCreateRequest, TodoMockUpdateRequest } from "./__mocks__";
 const mockTableName = "test-table";
 const mockTodoId = "abc123";
@@ -12,11 +12,11 @@ const mockTodo = {
 process.env.TODO_SECONDARY_LOCAL_INDEX_NAME = "test_index";
 const mockCollection = [mockTodo, mockTodo, mockTodo]
 
-describe("TodoService", () => {
+describe("TodoRepository", () => {
   describe("findAll", () => {
     it('should call DocumentClient.query with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       await todoService.findAll(mockUserId);
 
@@ -25,7 +25,7 @@ describe("TodoService", () => {
           ':userId': mockUserId
         },
         IndexName: process.env.TODO_SECONDARY_LOCAL_INDEX_NAME,
-        KeyConditionExpression: 'userId = :s',
+        KeyConditionExpression: 'userId = :userId',
         TableName: mockTableName
       });
     });
@@ -33,7 +33,7 @@ describe("TodoService", () => {
     it('should return a collection todo items', async () => {
       const mockClient = new DocumentClientMock() as any;
       mockClient.promise = awsSdkPromise({ Items: mockCollection});
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       const results = await todoService.findAll(mockUserId);
 
@@ -44,7 +44,7 @@ describe("TodoService", () => {
   describe("create", () => {
     it('should call DocumentClient.put with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       const result = await todoService.create(TodoMockCreateRequest, mockUserId);
 
@@ -57,7 +57,7 @@ describe("TodoService", () => {
     it('should return newly created todo if put operation is successful', async () => {
       const mockClient = new DocumentClientMock() as any;
       mockClient.promise = awsSdkPromise(TodoMockCreateRequest);
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       const result = await todoService.create(TodoMockCreateRequest, mockUserId);
 
@@ -70,7 +70,7 @@ describe("TodoService", () => {
   describe("delete", () => {
     it('should call DocumentClient.delete with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       await todoService.delete(mockTodoId);
 
@@ -84,7 +84,7 @@ describe("TodoService", () => {
 
     it('should return todo id of deleted todo if delete operation is successful', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       const result = await todoService.delete(mockTodoId);
 
@@ -95,7 +95,7 @@ describe("TodoService", () => {
   describe("update", () => {
     it('should call DocumentClient.update with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       await todoService.update(mockTodoId, TodoMockUpdateRequest);
 
@@ -116,7 +116,7 @@ describe("TodoService", () => {
 
     it('should return updated attributes if update operation was successful', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoService(mockClient, mockTableName);
+      const todoService = new TodoRepository(mockClient, mockTableName);
 
       const result = await todoService.update(mockTodoId, TodoMockUpdateRequest);
 

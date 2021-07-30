@@ -1,20 +1,22 @@
 import 'source-map-support/register';
-import { APIGatewayProxyResult, APIGatewayProxyHandler, APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 import { createLogger } from "../../utils/logger";
-import TodoService from '../service';
+import TodoRepository from '../todo-repository';
 import logStatements from '../log-statements';
-import { LambdaEventHandler } from '../../interfaces/lambda-custom-event-handler';
+import { LambdaEventHandler } from '../../types/lambda-custom-event-handler';
 import { getUserId } from '../../utils/get-user-id';
+import * as middy from 'middy'
+import { cors, httpErrorHandler } from 'middy/middlewares'
 
-export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent, service, logger, getUserId) => {
+export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger, getUserId) => {
   try {
     const userId = getUserId(event);
-    const todos = await service.findAll(userId);
+    const todos = userId ? await repository.findAll(userId) : [];
     logger.info(logStatements.findAll.success, event);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(todos)
+      body: JSON.stringify({ items: todos })
     }
   } catch (error) {
     logger.error(logStatements.findAll.error, error);
@@ -26,8 +28,16 @@ export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent,
   }
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const logger = createLogger(logStatements.findAll.name);
-  const service = new TodoService();
-  return listTodos(event, service, logger, getUserId);
-}
+export const handler = middy(
+  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    const logger = createLogger(logStatements.findAll.name);
+    const repository = new TodoRepository();
+    return listTodos(event, repository, logger, getUserId);
+  }
+);
+
+handler
+  .use(httpErrorHandler())
+  .use(cors({
+    credentials: true
+  }))

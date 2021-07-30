@@ -1,4 +1,4 @@
-import { TodoEventStream, TodoAttachmentsServiceMock } from "../__mocks__";
+import { TodoEventStream, AttachmentsRepositoryMock } from "../__mocks__";
 import { createLogger } from "../../utils/logger";
 import { removeAttachment } from "./remove-attachment";
 import logStatements from "../log-statements";
@@ -17,21 +17,21 @@ describe('removeAttachment', () => {
     jest.resetAllMocks();
   })
 
-  it('should call service.delete once with correct params', async () => {
-    await removeAttachment(TodoEventStream, TodoAttachmentsServiceMock, Logger);
-    expect(TodoAttachmentsServiceMock.delete).toHaveBeenCalledTimes(1);
-    expect(TodoAttachmentsServiceMock.delete).toHaveBeenCalledWith(TodoEventStream.Records[0].dynamodb.OldImage.todoId.S);
+  it('should call repository.delete once with correct params', async () => {
+    await removeAttachment(TodoEventStream, AttachmentsRepositoryMock, Logger);
+    expect(AttachmentsRepositoryMock.delete).toHaveBeenCalledTimes(1);
+    expect(AttachmentsRepositoryMock.delete).toHaveBeenCalledWith(TodoEventStream.Records[0].dynamodb.OldImage.todoId.S);
   });
 
   it('should call logger.info once with correct params', async () => {
-    await removeAttachment(TodoEventStream, TodoAttachmentsServiceMock, Logger);
+    await removeAttachment(TodoEventStream, AttachmentsRepositoryMock, Logger);
     expect(logInfoSpy).toHaveBeenCalledTimes(1);
     expect(logInfoSpy).toHaveBeenCalledWith(logStatements.removeAttachment.success, TodoEventStream.Records[0].dynamodb.OldImage);
   });
 
   it('should call logger.error once with correct params', async () => {
-    TodoAttachmentsServiceMock.delete.mockRejectedValue("error");
-    await removeAttachment(TodoEventStream, TodoAttachmentsServiceMock, Logger);
+    AttachmentsRepositoryMock.delete.mockRejectedValue("error");
+    await removeAttachment(TodoEventStream, AttachmentsRepositoryMock, Logger);
     expect(logErrSpy).toHaveBeenCalledTimes(1);
     expect(logErrSpy).toHaveBeenCalledWith(logStatements.removeAttachment.error, "error");
   });

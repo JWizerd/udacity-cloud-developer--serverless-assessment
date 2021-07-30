@@ -8,5 +8,5 @@ export const APIGatewayProxyEventMock = {
 }
 
 export const APIGatewayProxyEventCollectionMock = {
-  body: JSON.stringify([TodoMock, TodoMock])
+  body: { items: [TodoMock, TodoMock] }
 }
