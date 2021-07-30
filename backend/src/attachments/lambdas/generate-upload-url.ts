@@ -18,7 +18,9 @@ export const generateUploadUrl: LambdaEventHandler = async (
 
       return {
         statusCode: 200,
-        body: url
+        body: {
+          uploadUrl: url
+        }
       };
     } catch(error) {
       logger.error(logStatements.generateUploadUrl.error, error)

@@ -18,7 +18,7 @@ export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent
 
     return {
       statusCode: 201,
-      body: JSON.stringify(result)
+      body: JSON.stringify({ item: result })
     }
   } catch (error) {
     logger.error(logStatements.create.error, error);

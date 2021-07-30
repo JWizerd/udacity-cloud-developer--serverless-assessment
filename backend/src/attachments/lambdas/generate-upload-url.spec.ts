@@ -25,7 +25,7 @@ describe('updateTodo', () => {
     repository.getUploadUrl.mockResolvedValueOnce(mockAttachmentUrl);
     const response = await generateUploadUrl(APIGatewayProxyEventMock, repository, logger);
     expect(response.statusCode).toBe(200);
-    expect(response.body).toBe(mockAttachmentUrl);
+    expect(response.body).toEqual({ uploadUrl: mockAttachmentUrl });
   });
 
   it('should call logger.info with correct params', async () => {
