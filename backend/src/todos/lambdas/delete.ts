@@ -10,8 +10,8 @@ import { cors, httpErrorHandler } from 'middy/middlewares'
 export const deleteTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger) => {
   try {
     const todoId = event.pathParameters.todoId
-    await repository.delete(todoId);
     logger.info(logStatements.delete.success, todoId);
+    await repository.delete(todoId);
 
     return {
       statusCode: 204,
