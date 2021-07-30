@@ -51,7 +51,7 @@ functions:
   Auth:
     handler: src/auth/lambdas/authorizer.handler
     environment:
-      - AUTH0_JWKS_ENDPOINT: 'https://dev-dl7xpde6.us.auth0.com/.well-known/jwks.json'
+      AUTH0_JWKS_ENDPOINT: 'https://dev-dl7xpde6.us.auth0.com/.well-known/jwks.json'
 
   # TODO: Configure this function
   GetTodos:
@@ -71,6 +71,7 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   CreateTodo:
@@ -128,6 +129,7 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
   RemoveAttachment:
     handler: src/dynamodb/lambdas/remove-attachment.handler
@@ -150,13 +152,14 @@ functions:
   GenerateUploadUrl:
     handler: src/attachments/lambdas/generate-upload-url.handler
     environment:
-      - SIGNED_URL_EXPIRATION: 300
+      SIGNED_URL_EXPIRATION: 300
     events:
       - http:
           method: post
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
+          reqValidatorName: RequestBodyValidator
 
 resources:
   Resources:
@@ -232,7 +235,7 @@ resources:
       Type: AWS::S3::BucketPolicy
       Properties:
         PolicyDocument:
-          Id: TodoAttachmentsBucketPolicy
+          Id: MyPolicy
           Version: "2012-10-17"
           Statement:
             - Sid: PublicReadForGetBucketObjects
@@ -240,10 +243,4 @@ resources:
               Principal: '*'
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*'
-            - Sid: PutImagesOnlyBucket
-              Effect: Allow
-              Principal: '*'
-              Ation: 's3:PutObject'
-              Resource:
-                - 'arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*'
         Bucket: !Ref TodoAttachmentsBucket
