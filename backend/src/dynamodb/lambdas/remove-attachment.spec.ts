@@ -26,7 +26,7 @@ describe('removeAttachment', () => {
   it('should call logger.info once with correct params', async () => {
     await removeAttachment(TodoEventStream, AttachmentsRepositoryMock, Logger);
     expect(logInfoSpy).toHaveBeenCalledTimes(1);
-    expect(logInfoSpy).toHaveBeenCalledWith(logStatements.removeAttachment.success, TodoEventStream.Records[0].dynamodb.OldImage);
+    expect(logInfoSpy).toHaveBeenCalledWith(logStatements.removeAttachment.success, TodoEventStream);
   });
 
   it('should call logger.error once with correct params', async () => {
