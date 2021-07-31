@@ -7,12 +7,14 @@ import { createLogger } from "../../utils/logger";
 import { LambdaEventHandler } from '../../types/lambda-custom-event-handler';
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
+import { getUserId } from "../../utils/get-user-id";
 
-export const updateTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger) => {
+export const updateTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger, getUserId) => {
   try {
+    const userId = getUserId(event);
     const todoId = event.pathParameters.todoId;
     const updatedTodo: UpdateTodoRequest = JSON.parse(event.body);
-    const result = await repository.update(todoId, updatedTodo);
+    const result = await repository.update(todoId, updatedTodo, userId);
     logger.info(logStatements.update.success, result);
 
     return {
@@ -33,7 +35,7 @@ export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const logger = createLogger(logStatements.update.name);
     const repository = new TodoRepository();
-    return updateTodo(event, repository, logger);
+    return updateTodo(event, repository, logger, getUserId);
   }
 );
 

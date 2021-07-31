@@ -98,18 +98,20 @@ describe("TodoRepository", () => {
       const mockClient = new DocumentClientMock() as any;
       const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      await todoRepo.update(mockTodoId, TodoMockUpdateRequest);
+      await todoRepo.update(mockTodoId, TodoMockUpdateRequest, mockUserId);
 
       expect(mockClient.update).toHaveBeenCalledWith({
         TableName: mockTableName,
         Key: {
-          todoId: mockTodoId
+          todoId: mockTodoId,
+          userId: mockUserId
         },
-        UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c",
+        UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c, info.attachmentUrl=:d",
         ExpressionAttributeValues: {
           ":a": TodoMockUpdateRequest.name,
           ":b": TodoMockUpdateRequest.dueDate,
-          ":c": TodoMockUpdateRequest.done
+          ":c": TodoMockUpdateRequest.done,
+          ":d": TodoMockUpdateRequest.attachmentUrl
         },
         ReturnValues: "ALL_NEW"
       });
@@ -119,7 +121,7 @@ describe("TodoRepository", () => {
       const mockClient = new DocumentClientMock() as any;
       const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      const result = await todoRepo.update(mockTodoId, TodoMockUpdateRequest);
+      const result = await todoRepo.update(mockTodoId, TodoMockUpdateRequest, mockUserId);
 
       expect(result).toBe(TodoMockUpdateRequest);
     });

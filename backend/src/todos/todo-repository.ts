@@ -56,17 +56,19 @@ export default class TodoRepository implements Repository {
     return todoId;
   }
 
-  async update(todoId: string, todoItem: UpdateTodoRequest): Promise<TodoItem> {
+  async update(todoId: string, todoItem: UpdateTodoRequest, userId: string): Promise<TodoItem> {
     await this.client.update({
       TableName: this.table,
       Key: {
-        todoId: todoId
+        todoId: todoId,
+        userId: userId,
       },
-      UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c",
+      UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c, info.attachmentUrl=:d",
       ExpressionAttributeValues: {
         ":a": todoItem.name,
         ":b": todoItem.dueDate,
-        ":c": todoItem.done
+        ":c": todoItem.done,
+        ":d": todoItem.attachmentUrl
       },
       ReturnValues: "ALL_NEW"
     }).promise();
