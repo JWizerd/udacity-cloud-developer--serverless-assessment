@@ -134,7 +134,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - S3:DeleteObject
+          - s3:DeleteObject
         Resource: arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*
       - Effect: Allow
         Action:
