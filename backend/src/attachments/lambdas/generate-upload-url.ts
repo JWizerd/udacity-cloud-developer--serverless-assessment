@@ -18,9 +18,9 @@ export const generateUploadUrl: LambdaEventHandler = async (
 
       return {
         statusCode: 200,
-        body: {
+        body: JSON.stringify({
           uploadUrl: url
-        }
+        })
       };
     } catch(error) {
       logger.error(logStatements.generateUploadUrl.error, error)
@@ -42,6 +42,8 @@ export const handler = middy(
 
 handler
   .use(httpErrorHandler())
-  .use(cors({
-    credentials: true
-  }));
+  .use(
+    cors({
+      credentials: true
+    })
+  );
