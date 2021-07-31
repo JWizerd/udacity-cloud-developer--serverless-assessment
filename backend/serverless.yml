@@ -71,7 +71,6 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   CreateTodo:
@@ -104,7 +103,7 @@ functions:
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     events:
       - http:
-          method: post
+          method: patch
           path: todos/{todoId}
           cors: true
           authorizer: Auth
@@ -129,7 +128,6 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
   RemoveAttachment:
     handler: src/dynamodb/lambdas/remove-attachment.handler
@@ -142,7 +140,6 @@ functions:
         Action:
           - dynamodb:GetRecords
         Resource: !GetAtt TodosTable.StreamArn
-
     events:
       - stream:
           type: dynamodb
@@ -159,7 +156,6 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
 resources:
   Resources:
