@@ -7,9 +7,9 @@ import { createLogger } from "../../utils/logger";
 
 export const removeAttachment: LambdaEventHandler = async (event: DynamoDBStreamEvent, repository, logger) => {
   try {
-    logger.info(logStatements.removeAttachment.success, event);
     for (const record of event.Records) {
       if (record.eventName === 'REMOVE') {
+        logger.info(logStatements.removeAttachment.success, event);
         await repository.delete(record.dynamodb.Keys.todoId.S);
       }
     }
