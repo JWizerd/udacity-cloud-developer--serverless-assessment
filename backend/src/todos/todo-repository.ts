@@ -44,11 +44,12 @@ export default class TodoRepository implements Repository {
     return newTodoItem as TodoItem;
   }
 
-  async delete(todoId: string): Promise<string> {
+  async delete(todoId: string, userId: string): Promise<string> {
     await this.client.delete({
       TableName: this.table,
       Key: {
-        todoId
+        todoId,
+        userId
       }
     }).promise();
 
