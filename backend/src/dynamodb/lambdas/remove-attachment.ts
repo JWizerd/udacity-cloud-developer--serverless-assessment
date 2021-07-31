@@ -9,13 +9,9 @@ export const removeAttachment: LambdaEventHandler = async (event: DynamoDBStream
   try {
     logger.info(logStatements.removeAttachment.success, event);
     for (const record of event.Records) {
-      if (record.eventName !== 'REMOVE') {
-        continue
+      if (record.eventName === 'REMOVE') {
+        await repository.delete(record.dynamodb.Keys.todoId.S);
       }
-
-      const todo = record.dynamodb.OldImage
-      const todoId = todo.todoId.S;
-      await repository.delete(todoId);
     }
   } catch (error) {
     logger.error(logStatements.removeAttachment.error, error);

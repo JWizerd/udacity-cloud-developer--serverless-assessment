@@ -20,7 +20,7 @@ describe('removeAttachment', () => {
   it('should call repository.delete once with correct params', async () => {
     await removeAttachment(TodoEventStream, AttachmentsRepositoryMock, Logger);
     expect(AttachmentsRepositoryMock.delete).toHaveBeenCalledTimes(1);
-    expect(AttachmentsRepositoryMock.delete).toHaveBeenCalledWith(TodoEventStream.Records[0].dynamodb.OldImage.todoId.S);
+    expect(AttachmentsRepositoryMock.delete).toHaveBeenCalledWith(TodoEventStream.Records[0].dynamodb.Keys.todoId.S);
   });
 
   it('should call logger.info once with correct params', async () => {
