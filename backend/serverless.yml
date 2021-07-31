@@ -71,7 +71,6 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
   # TODO: Configure this function
   CreateTodo:
@@ -122,27 +121,25 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/stream/
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
     events:
       - http:
           method: delete
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-          reqValidatorName: RequestBodyValidator
 
   RemoveAttachment:
     handler: src/dynamodb/lambdas/remove-attachment.handler
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - S3:DeleteObject
+          - s3:DeleteObject
         Resource: arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*
       - Effect: Allow
         Action:
           - dynamodb:GetRecords
         Resource: !GetAtt TodosTable.StreamArn
-
     events:
       - stream:
           type: dynamodb
@@ -153,6 +150,11 @@ functions:
     handler: src/attachments/lambdas/generate-upload-url.handler
     environment:
       SIGNED_URL_EXPIRATION: 300
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+        Resource: arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*
     events:
       - http:
           method: post
@@ -169,7 +171,7 @@ resources:
         ResponseParameters:
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
           gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST,PATCH'"
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi

@@ -16,9 +16,9 @@ describe("TodoRepository", () => {
   describe("findAll", () => {
     it('should call DocumentClient.query with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      await todoService.findAll(mockUserId);
+      await todoRepo.findAll(mockUserId);
 
       expect(mockClient.query).toHaveBeenCalledWith({
         ExpressionAttributeValues: {
@@ -33,9 +33,9 @@ describe("TodoRepository", () => {
     it('should return a collection todo items', async () => {
       const mockClient = new DocumentClientMock() as any;
       mockClient.promise = awsSdkPromise({ Items: mockCollection});
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      const results = await todoService.findAll(mockUserId);
+      const results = await todoRepo.findAll(mockUserId);
 
       expect(results).toBe(mockCollection);
     });
@@ -44,9 +44,9 @@ describe("TodoRepository", () => {
   describe("create", () => {
     it('should call DocumentClient.put with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      const result = await todoService.create(TodoMockCreateRequest, mockUserId);
+      const result = await todoRepo.create(TodoMockCreateRequest, mockUserId);
 
       expect(mockClient.put).toHaveBeenCalledWith({
         TableName: mockTableName,
@@ -57,9 +57,9 @@ describe("TodoRepository", () => {
     it('should return newly created todo if put operation is successful', async () => {
       const mockClient = new DocumentClientMock() as any;
       mockClient.promise = awsSdkPromise(TodoMockCreateRequest);
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      const result = await todoService.create(TodoMockCreateRequest, mockUserId);
+      const result = await todoRepo.create(TodoMockCreateRequest, mockUserId);
 
       expect(result.createdAt).toBeDefined();
       expect(result.todoId).toBeDefined();
@@ -70,23 +70,24 @@ describe("TodoRepository", () => {
   describe("delete", () => {
     it('should call DocumentClient.delete with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      await todoService.delete(mockTodoId);
+      await todoRepo.delete(mockTodoId, mockUserId);
 
       expect(mockClient.delete).toHaveBeenCalledWith({
         TableName: mockTableName,
         Key: {
-          todoId: mockTodoId
+          todoId: mockTodoId,
+          userId: mockUserId
         }
       });
     });
 
     it('should return todo id of deleted todo if delete operation is successful', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      const result = await todoService.delete(mockTodoId);
+      const result = await todoRepo.delete(mockTodoId, mockUserId);
 
       expect(result).toBe(mockTodoId);
     });
@@ -95,20 +96,22 @@ describe("TodoRepository", () => {
   describe("update", () => {
     it('should call DocumentClient.update with correct params', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      await todoService.update(mockTodoId, TodoMockUpdateRequest);
+      await todoRepo.update(mockTodoId, TodoMockUpdateRequest, mockUserId);
 
       expect(mockClient.update).toHaveBeenCalledWith({
         TableName: mockTableName,
         Key: {
-          todoId: mockTodoId
+          todoId: mockTodoId,
+          userId: mockUserId
         },
-        UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c",
+        UpdateExpression: "set info.name=:a, info.dueDate=:b, info.done=:c, info.attachmentUrl=:d",
         ExpressionAttributeValues: {
           ":a": TodoMockUpdateRequest.name,
           ":b": TodoMockUpdateRequest.dueDate,
-          ":c": TodoMockUpdateRequest.done
+          ":c": TodoMockUpdateRequest.done,
+          ":d": TodoMockUpdateRequest.attachmentUrl
         },
         ReturnValues: "ALL_NEW"
       });
@@ -116,9 +119,9 @@ describe("TodoRepository", () => {
 
     it('should return updated attributes if update operation was successful', async () => {
       const mockClient = new DocumentClientMock() as any;
-      const todoService = new TodoRepository(mockClient, mockTableName);
+      const todoRepo = new TodoRepository(mockClient, mockTableName);
 
-      const result = await todoService.update(mockTodoId, TodoMockUpdateRequest);
+      const result = await todoRepo.update(mockTodoId, TodoMockUpdateRequest, mockUserId);
 
       expect(result).toBe(TodoMockUpdateRequest);
     });

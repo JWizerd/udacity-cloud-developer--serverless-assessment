@@ -19,7 +19,8 @@ export const TodoMockCreateRequest: CreateTodoRequest = {
 export const TodoMockUpdateRequest: UpdateTodoRequest = {
   name: "test todo",
   dueDate: "2020-01-01",
-  done: false
+  done: false,
+  attachmentUrl: "http://google.com"
 }
 
 export const TodoCollectionMock = [TodoMock, TodoMock];

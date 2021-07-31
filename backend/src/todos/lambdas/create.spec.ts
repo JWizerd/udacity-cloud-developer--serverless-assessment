@@ -23,7 +23,7 @@ describe('createTodo', () => {
     TodoRepositoryMock.create.mockResolvedValueOnce(TodoMock);
     const result = await createTodo(APIGatewayProxyEventMock, TodoRepositoryMock, Logger, getUserIdMock);
     expect(result.statusCode).toBe(201);
-    expect(result.body).toEqual(JSON.stringify(TodoMock));
+    expect(result.body).toEqual(JSON.stringify({ item: TodoMock }));
   });
 
   it('should call repository.create with the correct params', async () => {

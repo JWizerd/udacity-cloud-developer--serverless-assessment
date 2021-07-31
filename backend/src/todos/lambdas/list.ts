@@ -10,9 +10,9 @@ import { cors, httpErrorHandler } from 'middy/middlewares'
 
 export const listTodos: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger, getUserId) => {
   try {
+    logger.info(logStatements.findAll.success, event);
     const userId = getUserId(event);
     const todos = userId ? await repository.findAll(userId) : [];
-    logger.info(logStatements.findAll.success, event);
 
     return {
       statusCode: 200,

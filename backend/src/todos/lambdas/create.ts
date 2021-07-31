@@ -12,13 +12,13 @@ import { cors, httpErrorHandler } from 'middy/middlewares'
 export const createTodo: LambdaEventHandler = async (event: APIGatewayProxyEvent, repository, logger, getUserId) => {
   try {
     const newTodo: CreateTodoRequest = JSON.parse(event.body);
+    logger.info(logStatements.create.success, newTodo);
     const userId = getUserId(event);
     const result = await repository.create(newTodo, userId);
-    logger.info(logStatements.create.success, newTodo);
 
     return {
       statusCode: 201,
-      body: JSON.stringify(result)
+      body: JSON.stringify({ item: result })
     }
   } catch (error) {
     logger.error(logStatements.create.error, error);
