@@ -150,6 +150,11 @@ functions:
     handler: src/attachments/lambdas/generate-upload-url.handler
     environment:
       SIGNED_URL_EXPIRATION: 300
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+        Resource: arn:aws:s3:::${self:provider.environment.TODO_ATTACHMENTS_S3_BUCKET}/*
     events:
       - http:
           method: post
